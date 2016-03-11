@@ -7,15 +7,20 @@
  */
 
 /dts-v1/;
-#include <dt-bindings/gpio/gpio.h>
 #include "imx6q.dtsi"
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/gpio/gpio.h>
 
 / {
 	model = "Zealz GK802";
 	compatible = "zealz,imx6q-gk802", "fsl,imx6q";
 
+	aliases {
+		mxcfb0 = &mxcfb1;
+	};
+
 	chosen {
-		stdout-path = &uart4;
+		linux,stdout-path = &uart4;
 	};
 
 	memory {
@@ -35,6 +40,14 @@
 			regulator-max-microvolt = <3300000>;
 			regulator-always-on;
 		};
+
+		reg_usb_h1_vbus: usb_h1_vbus {
+			compatible = "regulator-fixed";
+			regulator-name = "usb_h1_vbus";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			gpio = <&gpio2 0 0>;
+		};
 	};
 
 	gpio-keys {
@@ -47,10 +60,76 @@
 			gpio-key,wakeup;
 		};
 	};
+
+	mxcfb1: fb@0 {
+		compatible = "fsl,mxc_sdc_fb";
+		disp_dev = "hdmi";
+		interface_pix_fmt = "RGB24";
+		mode_str ="1920x1080M@60";
+		default_bpp = <24>;
+		int_clk = <0>;
+		late_init = <0>;
+		status = "okay";
+	};
+
+	sound-hdmi {
+		compatible = "fsl,imx6q-audio-hdmi",
+			     "fsl,imx-audio-hdmi";
+		model = "imx-audio-hdmi";
+		hdmi-controller = <&hdmi_audio>;
+	};
+
+	v4l2_cap_0 {
+		compatible = "fsl,imx6q-v4l2-capture";
+		ipu_id = <0>;
+		csi_id = <0>;
+		mclk_source = <0>;
+		status = "okay";
+	};
+
+	v4l2_out {
+		compatible = "fsl,mxc_v4l2_output";
+		status = "okay";
+	};
 };
 
 &hdmi {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hdmi>;
 	ddc-i2c-bus = <&i2c3>;
+	status = "okay";
+};
+
+/* External I2C via HDMI */
+&i2c3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c3>;
+	clock-frequency = <100000>;
+	status = "okay";
+
+/*
+	hdmi: edid@50 {
+		compatible = "fsl,imx6-hdmi-i2c";
+		reg = <0x50>;
+	};
+*/
+};
+
+&hdmi_audio {
+	status = "okay";
+};
+
+/*
+&hdmi_core {
+	ipu_id = <0>;
+	disp_id = <0>;
+	status = "okay";
+};
+*/
+
+&hdmi_video {
+	fsl,phy_reg_vlev = <0x0294>;
+	fsl,phy_reg_cksymtx = <0x800d>;
 	status = "okay";
 };
 
@@ -68,13 +147,6 @@
 	};
 };
 
-/* External I2C via HDMI */
-&i2c3 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c3>;
-	clock-frequency = <100000>;
-	status = "okay";
-};
 
 &iomuxc {
 	pinctrl-names = "default";
@@ -87,6 +159,12 @@
 				MX6QDL_PAD_EIM_D16__GPIO3_IO16  0x100b1
 				/* RTL8192CU enable GPIO, active-low */
 				MX6QDL_PAD_NANDF_D0__GPIO2_IO00 0x1b0b0
+			>;
+		};
+		
+		pinctrl_hdmi: hdmi {
+			fsl,pins = <
+				MX6QDL_PAD_KEY_ROW2__HDMI_TX_CEC_LINE 0x1f8b0
 			>;
 		};
 
@@ -135,6 +213,14 @@
 	};
 };
 
+&mipi_csi {
+	ipu_id = <0>;
+	csi_id = <0>;
+	v_channel = <0>;
+	lanes = <2>;
+	status = "okay";
+};
+
 &uart2 {
 	status = "okay";
 };
@@ -147,12 +233,17 @@
 
 /* External USB-A port (USBOTG) */
 &usbotg {
+	phy_type = "utmi";
+	dr_mode = "host";
 	disable-over-current;
 	status = "okay";
 };
 
 /* Internal USB port (USBH1), connected to RTL8192CU */
 &usbh1 {
+	phy_type = "utmi";
+	dr_mode = "host";
+	vbus-supply = <&reg_usb_h1_vbus>;
 	disable-over-current;
 	status = "okay";
 };
@@ -162,7 +253,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	bus-width = <4>;
-	cd-gpios = <&gpio6 11 GPIO_ACTIVE_LOW>;
+	cd-gpios = <&gpio6 11 0>;
 	vmmc-supply = <&reg_3p3v>;
 	status = "okay";
 };
