@@ -48,6 +48,19 @@
 			regulator-max-microvolt = <5000000>;
 			gpio = <&gpio2 0 0>;
 		};
+
+/*
+		reg_usbotg_vbus: usb-otg-vbus {
+			compatible = "regulator-fixed";
+			enable-active-high;
+			gpio = <&gpio3 22 0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_cubox_i_usbotg_vbus>;
+			regulator-name = "usb_otg_vbus";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+		};
+*/
 	};
 
 	gpio-keys {
@@ -93,12 +106,18 @@
 	};
 };
 
+/*
 &hdmi {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_hdmi>;
+	pinctrl-0 = <&pinctrl_hdmi_cec>;
 	ddc-i2c-bus = <&i2c3>;
 	status = "okay";
 };
+
+&mxcfb1 {
+	status = "okay";
+};
+*/
 
 /* External I2C via HDMI */
 &i2c3 {
@@ -107,25 +126,28 @@
 	clock-frequency = <100000>;
 	status = "okay";
 
-/*
-	hdmi: edid@50 {
+	hdmi_screen: edid@50 {
 		compatible = "fsl,imx6-hdmi-i2c";
 		reg = <0x50>;
 	};
-*/
 };
 
 &hdmi_audio {
 	status = "okay";
 };
 
-/*
-&hdmi_core {
+&hdmi_cec {
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_hdmi_cec>;
+        status = "okay";
+};
+
+
+&hdmi {
 	ipu_id = <0>;
 	disp_id = <0>;
 	status = "okay";
 };
-*/
 
 &hdmi_video {
 	fsl,phy_reg_vlev = <0x0294>;
@@ -162,7 +184,7 @@
 			>;
 		};
 		
-		pinctrl_hdmi: hdmi {
+		pinctrl_hdmi_cec: hdmi {
 			fsl,pins = <
 				MX6QDL_PAD_KEY_ROW2__HDMI_TX_CEC_LINE 0x1f8b0
 			>;
