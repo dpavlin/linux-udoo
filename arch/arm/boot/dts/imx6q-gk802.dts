@@ -8,6 +8,7 @@
 
 /dts-v1/;
 #include "imx6q.dtsi"
+//#include "imx6qdl.dtsi"
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/gpio/gpio.h>
 
@@ -106,7 +107,6 @@
 	};
 };
 
-/*
 &hdmi {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hdmi_cec>;
@@ -117,7 +117,6 @@
 &mxcfb1 {
 	status = "okay";
 };
-*/
 
 /* External I2C via HDMI */
 &i2c3 {
