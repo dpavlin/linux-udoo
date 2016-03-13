@@ -50,18 +50,14 @@
 			gpio = <&gpio2 0 0>;
 		};
 
-/*
-		reg_usbotg_vbus: usb-otg-vbus {
+		reg_usb_otg_vbus: usb-otg-vbus {
 			compatible = "regulator-fixed";
 			enable-active-high;
-			gpio = <&gpio3 22 0>;
-			pinctrl-names = "default";
-			pinctrl-0 = <&pinctrl_cubox_i_usbotg_vbus>;
+			gpio = <&gpio4 15 0>;
 			regulator-name = "usb_otg_vbus";
 			regulator-min-microvolt = <5000000>;
 			regulator-max-microvolt = <5000000>;
 		};
-*/
 	};
 
 	gpio-keys {
@@ -177,9 +173,20 @@
 		pinctrl_hog: hoggrp {
 			fsl,pins = <
 				/* Recovery button, active-low */
-				MX6QDL_PAD_EIM_D16__GPIO3_IO16  0x100b1
+				MX6QDL_PAD_EIM_D16__GPIO3_IO16	0x100b1
 				/* RTL8192CU enable GPIO, active-low */
-				MX6QDL_PAD_NANDF_D0__GPIO2_IO00 0x1b0b0
+				MX6QDL_PAD_NANDF_D0__GPIO2_IO00	0x1b0b0
+				/*USB_OTG_DET(USB OTG cable plug detect) */
+				MX6QDL_PAD_EIM_A16__GPIO2_IO22	0x80000000
+				/*WLAN_CLKREQn*/
+				MX6QDL_PAD_EIM_A25__GPIO5_IO02	0x80000000
+				/* WLAN_ACT */
+				MX6QDL_PAD_EIM_D17__GPIO3_IO17	0x80000000
+				/*BT_PERI*/
+				MX6QDL_PAD_EIM_D18__GPIO3_IO18	0x17059
+				/* USB OC pin */
+				MX6QDL_PAD_EIM_D21__USB_OTG_OC	0x80000000
+
 			>;
 		};
 		
@@ -203,10 +210,24 @@
 			>;
 		};
 
+		pinctrl_uart2: uart2grp {
+			fsl,pins = <
+				MX6QDL_PAD_EIM_D26__UART2_RX_DATA	0x1b0b1
+				MX6QDL_PAD_EIM_D27__UART2_TX_DATA	0x1b0b1
+				MX6QDL_PAD_EIM_D28__UART2_DTE_CTS_B	0x1b0b1
+				MX6QDL_PAD_EIM_D29__UART2_DTE_RTS_B	0x1b0b1
+			>;
+		};
 		pinctrl_uart4: uart4grp {
 			fsl,pins = <
 				MX6QDL_PAD_KEY_COL0__UART4_TX_DATA	0x1b0b1
 				MX6QDL_PAD_KEY_ROW0__UART4_RX_DATA	0x1b0b1
+			>;
+		};
+
+		pinctrl_usbotg: usbotggrp {
+			fsl,pins = <
+				MX6QDL_PAD_GPIO_1__USB_OTG_ID		0x17059
 			>;
 		};
 
@@ -218,6 +239,11 @@
 				MX6QDL_PAD_SD3_DAT1__SD3_DATA1		0x17059
 				MX6QDL_PAD_SD3_DAT2__SD3_DATA2		0x17059
 				MX6QDL_PAD_SD3_DAT3__SD3_DATA3		0x17059
+
+				MX6QDL_PAD_SD3_DAT4__SD3_DATA4		0x17059
+				MX6QDL_PAD_SD3_DAT5__SD3_DATA5		0x17059
+				MX6QDL_PAD_SD3_DAT6__SD3_DATA6		0x17059
+				MX6QDL_PAD_SD3_DAT7__SD3_DATA7		0x17059
 			>;
 		};
 
@@ -229,6 +255,10 @@
 				MX6QDL_PAD_SD4_DAT1__SD4_DATA1		0x17059
 				MX6QDL_PAD_SD4_DAT2__SD4_DATA2		0x17059
 				MX6QDL_PAD_SD4_DAT3__SD4_DATA3		0x17059
+				MX6QDL_PAD_SD4_DAT4__SD4_DATA4		0x17059
+				MX6QDL_PAD_SD4_DAT5__SD4_DATA5		0x17059
+				MX6QDL_PAD_SD4_DAT6__SD4_DATA6		0x17059
+				MX6QDL_PAD_SD4_DAT7__SD4_DATA7		0x17059
 			>;
 		};
 	};
@@ -243,6 +273,10 @@
 };
 
 &uart2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart2>;
+	fsl,dte-mode;
+	fsl,uart-has-rtscts;
 	status = "okay";
 };
 
@@ -254,7 +288,10 @@
 
 /* External USB-A port (USBOTG) */
 &usbotg {
-	phy_type = "utmi";
+	vbus-supply = <&reg_usb_otg_vbus>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usbotg>;
+	//phy_type = "utmi";
 	dr_mode = "host";
 	disable-over-current;
 	status = "okay";
